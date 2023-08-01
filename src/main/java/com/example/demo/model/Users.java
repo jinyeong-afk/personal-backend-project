@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.dto.SignUpUsersDTO;
 import com.example.demo.requestObject.RequestSignUpUsers;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,8 +25,8 @@ public class Users {
     @Column(name = "password", nullable = false)
     private String password;
 
-    public Users(RequestSignUpUsers requestSignUpUsers){
-        this.email = requestSignUpUsers.getEmail();
-        this.password = requestSignUpUsers.getPassword();
+    public Users(SignUpUsersDTO signUpUsersDTO){
+        this.email = signUpUsersDTO.getEmail();
+        this.password = signUpUsersDTO.getPassword();
     }
 }
