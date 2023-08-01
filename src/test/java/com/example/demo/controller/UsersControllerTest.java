@@ -90,4 +90,28 @@ class UsersControllerTest {
         // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
         verify(usersService, never()).addUser(any(RequestSignUpUsers.class));
     }
+
+    @DisplayName("올바르지 않은 비밀번호 회원가입 실패")
+    @Test
+    void signUpFailByInvalidPassword() throws Exception {
+        // given
+        RequestSignUpUsers request = RequestSignUpUsers
+            .builder()
+            .email("test@test.com")
+            .password("test") // 8자 이하 비밀번호
+            .build();
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new Gson().toJson(request))
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
+        verify(usersService, never()).addUser(any(RequestSignUpUsers.class));
+    }
 }
