@@ -4,7 +4,9 @@ import com.example.demo.model.Users;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.requestObject.RequestSignUpUsers;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +17,8 @@ public class UserServiceIml implements UsersService {
         Users users = new Users(requestSignUpUsers);
         if (!checkDuplicationUser(users.getEmail())) {
             usersRepository.save(users);
+        } else {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
         }
     }
 
