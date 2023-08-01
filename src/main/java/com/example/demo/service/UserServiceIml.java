@@ -13,6 +13,12 @@ public class UserServiceIml implements UsersService {
 
     public void addUser(RequestSignUpUsers requestSignUpUsers) {
         Users users = new Users(requestSignUpUsers);
-        usersRepository.save(users);
+        if (!checkDuplicationUser(users.getEmail())) {
+            usersRepository.save(users);
+        }
+    }
+
+    public Boolean checkDuplicationUser(String email) {
+        return usersRepository.existsByEmail(email);
     }
 }
