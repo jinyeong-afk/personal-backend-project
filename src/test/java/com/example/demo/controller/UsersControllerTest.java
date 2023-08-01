@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,8 +45,11 @@ class UsersControllerTest {
     @Test
     void signUpSuccess() throws Exception {
         // given
-        RequestSignUpUsers request = signUpRequest();
-        ResponseSignUpUsers response = userResponse();
+        RequestSignUpUsers request = RequestSignUpUsers.builder()
+            .email("test@test.test")
+            .password("test1234")
+            .build();
+        ResponseSignUpUsers response = new ResponseSignUpUsers("test@test.test");
 
         doReturn(response).when(usersService)
             .addUser(any(RequestSignUpUsers.class));
@@ -62,14 +67,27 @@ class UsersControllerTest {
             .andReturn();
     }
 
-    private RequestSignUpUsers signUpRequest() {
-        return RequestSignUpUsers.builder()
-            .email("test@test.test")
+    @DisplayName("올바르지 않은 이메일 회원가입 실패")
+    @Test
+    void signUpFailByInvalidEmail() throws Exception {
+        // given
+        RequestSignUpUsers request = RequestSignUpUsers
+            .builder()
+            .email("test1234") // 올바르지 않은 이메일 형식
             .password("test1234")
             .build();
-    }
 
-    private ResponseSignUpUsers userResponse() {
-        return new ResponseSignUpUsers("test@test.test");
+        // when
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new Gson().toJson(request))
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
+        verify(usersService, never()).addUser(any(RequestSignUpUsers.class));
     }
 }
