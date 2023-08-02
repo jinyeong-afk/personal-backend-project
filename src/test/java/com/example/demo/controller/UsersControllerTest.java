@@ -1,15 +1,22 @@
 package com.example.demo.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.demo.repository.UsersRepository;
 import com.example.demo.requestObject.RequestSignUpUsers;
 import com.example.demo.responseObject.ResponseSignUpUsers;
+import com.example.demo.service.UserServiceIml;
 import com.example.demo.service.UsersService;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,13 +25,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class UsersControllerTest {
@@ -113,5 +126,26 @@ class UsersControllerTest {
 
         // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
         verify(usersService, never()).addUser(any(RequestSignUpUsers.class));
+    }
+
+    @DisplayName("중복 이메일 회원가입 실패")
+    @Test
+    public void testSignUpDuplicateEmail() {
+        // given
+        String duplicateEmail = "duplicate@example.com";
+        RequestSignUpUsers request = RequestSignUpUsers.builder()
+            .email(duplicateEmail)
+            .build();
+
+        // when
+        when(usersService.addUser(request)).thenThrow(new ResponseStatusException(HttpStatus.CONFLICT));
+
+        ResponseEntity<ResponseSignUpUsers> responseEntity = usersController.signUp(request);
+
+        // then
+        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
+        assertNull(responseEntity.getBody()); // Since an exception is thrown, the response body should be null
+
+        verify(usersService).addUser(request);
     }
 }

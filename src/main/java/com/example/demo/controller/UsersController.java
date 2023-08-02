@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +21,10 @@ public class UsersController {
 
     @PostMapping
     public ResponseEntity<ResponseSignUpUsers> signUp(@RequestBody @Validated RequestSignUpUsers requestSignUpUsers) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(usersService.addUser(requestSignUpUsers));
-
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(usersService.addUser(requestSignUpUsers));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
     }
 }
