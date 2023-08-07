@@ -3,8 +3,10 @@ package com.example.demo.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.demo.jwt.TokenProvider;
 import com.example.demo.model.Users;
@@ -48,6 +50,9 @@ class AuthControllerTest {
 
     @Mock
     private AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    @Mock
+    private CustomUserDetailsService customUserDetailsService;
 
     private MockMvc mockMvc;
 
@@ -105,5 +110,29 @@ class AuthControllerTest {
         ResponseEntity<Void> responseEntity = authController.authorize(failedUsers);
 
         assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
+    }
+
+    @DisplayName("로그인 실패 - 올바르지 않은 이메일")
+    @Test
+    void signUpFailByInvalidEmail() throws Exception {
+        // given
+        RequestLoginUsers request = RequestLoginUsers
+            .builder()
+            .email("test1234") // 올바르지 않은 이메일 형식
+            .password("test1234")
+            .build();
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/v1/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new Gson().toJson(request))
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
+        verify(customUserDetailsService, never()).loadUserByUsername(any());
     }
 }
