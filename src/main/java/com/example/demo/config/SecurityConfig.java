@@ -54,10 +54,7 @@ public class SecurityConfig {
             .authorizeHttpRequests() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
             .requestMatchers("/v1/authenticate").permitAll() // 로그인 api
             .requestMatchers("/v1/users").permitAll() // 회원가입 api
-            .requestMatchers(PathRequest.toH2Console()).permitAll()// h2-console, favicon.ico 요청 인증 무시
-            .requestMatchers("/favicon.ico").permitAll()
             .anyRequest().authenticated() // 그 외 인증 없이 접근X
-
             .and()
             .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
 
