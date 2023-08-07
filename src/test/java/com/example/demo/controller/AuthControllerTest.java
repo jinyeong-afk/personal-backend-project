@@ -114,12 +114,36 @@ class AuthControllerTest {
 
     @DisplayName("로그인 실패 - 올바르지 않은 이메일")
     @Test
-    void signUpFailByInvalidEmail() throws Exception {
+    void LoginFailByInvalidEmail() throws Exception {
         // given
         RequestLoginUsers request = RequestLoginUsers
             .builder()
             .email("test1234") // 올바르지 않은 이메일 형식
             .password("test1234")
+            .build();
+
+        // when
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post("/v1/authenticate")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new Gson().toJson(request))
+        );
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+        // 이메일 형식이 아닌 경우에는 서비스 메소드 addUser가 호출되지 않아야 함
+        verify(customUserDetailsService, never()).loadUserByUsername(any());
+    }
+
+    @DisplayName("로그인 실패 - 올바르지 않은 비밀번호")
+    @Test
+    void loginFailByInvalidPassword() throws Exception {
+        // given
+        RequestLoginUsers request = RequestLoginUsers
+            .builder()
+            .email("test@test.com") // 올바르지 않은 이메일 형식
+            .password("test")
             .build();
 
         // when
