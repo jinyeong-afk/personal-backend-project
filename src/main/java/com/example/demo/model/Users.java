@@ -11,7 +11,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Users {
+public class Users implements Serializable {
 
     @JsonIgnore
     @Id
@@ -45,6 +49,8 @@ public class Users {
         inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")}
     )
     private Set<Authority> authorities;
+    @OneToMany(mappedBy = "users")
+    private List<Boards> boards = new ArrayList<Boards>();
 
     public Users(SignUpUsersDTO signUpUsersDTO){
         this.email = signUpUsersDTO.getEmail();
