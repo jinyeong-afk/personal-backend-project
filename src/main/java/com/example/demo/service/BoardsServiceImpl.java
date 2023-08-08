@@ -36,18 +36,13 @@ public class BoardsServiceImpl implements BoardsService{
     }
 
     @Override
-    public ResponseReadAllBoards getAllBoards(Integer pagination) {
+    public Page<Boards> getAllBoards(Integer pagination) {
         Pageable pageable = PageRequest.of(pagination, PAGE_SIZE);
         Page<Boards> boardsPage = boardsRepository.findAll(pageable);
         List<BoardsData> boardsList = boardsPage.stream()
             .map(BoardsData::new)
             .collect(Collectors.toList());
-        return ResponseReadAllBoards.builder()
-            .contents(boardsList)
-            .pageSize(boardsPage.getSize())
-            .totalElements(boardsPage.getTotalElements())
-            .totalPages(boardsPage.getTotalPages())
-            .build();
+        return boardsPage;
     }
 
 }

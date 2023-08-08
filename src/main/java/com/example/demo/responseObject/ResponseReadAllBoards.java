@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ResponseReadAllBoards {
     private List<BoardsData> contents;
     private int pageSize;
@@ -19,6 +21,7 @@ public class ResponseReadAllBoards {
 
     @Getter
     @NoArgsConstructor
+    @ToString
     public static class BoardsData{
         private Long id;
         private Long userId;
