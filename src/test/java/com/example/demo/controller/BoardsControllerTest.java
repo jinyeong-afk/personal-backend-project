@@ -1,10 +1,14 @@
 package com.example.demo.controller;
 
+import static net.bytebuddy.matcher.ElementMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,9 +17,14 @@ import com.example.demo.model.Users;
 import com.example.demo.repository.BoardsRepository;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.requestObject.RequestCreateBoards;
+import com.example.demo.responseObject.ResponseReadAllBoards;
+import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
 import com.example.demo.service.BoardsService;
 import com.example.demo.service.BoardsServiceImpl;
 import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,11 +32,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -71,5 +87,37 @@ class BoardsControllerTest {
 
         // Mock 객체의 메서드 호출 검증
         verify(boardsRepository).save(any(Boards.class));
+    }
+
+    @DisplayName("모든 게시글 조회")
+    @Test
+    public void testGetAllBoards() throws Exception {
+        // 테스트용 데이터
+        int pagination = 0;
+        ReflectionTestUtils.setField(boardsService, "PAGE_SIZE", 10);
+        Boards boards = new Boards(1L, "테스트 타이틀", "테스트 콘텐츠", Users.builder().id(2L).build());
+        List<Boards> boardsDataList = new ArrayList<>();
+        boardsDataList.add(boards);
+
+        PageImpl<Boards> boardsPage = new PageImpl<>(boardsDataList);
+        when(boardsRepository.findAll(PageRequest.of(pagination, 10))).thenReturn(boardsPage);
+        // Mock 객체의 행동 설정
+        when(boardsService.getAllBoards(pagination)).thenReturn(boardsPage);
+
+        List<BoardsData> boardsList = boardsPage.stream()
+            .map(BoardsData::new)
+            .collect(Collectors.toList());
+
+        ResponseEntity<ResponseReadAllBoards> responseEntity = boardsController.ReadAllBoards(pagination);
+
+        assertEquals(responseEntity.getBody().toString(), ResponseReadAllBoards.builder()
+            .contents(boardsList)
+            .pageSize(boardsPage.getSize())
+            .totalElements(boardsPage.getTotalElements())
+            .totalPages(boardsPage.getTotalPages())
+            .build().toString());
+
+        // Mock 객체의 메서드 호출 검증
+        verify(boardsRepository).findAll(any(Pageable.class));
     }
 }
