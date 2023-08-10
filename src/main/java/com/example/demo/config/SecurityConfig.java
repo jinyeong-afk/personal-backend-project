@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -54,6 +55,7 @@ public class SecurityConfig {
             .authorizeHttpRequests() // HttpServletRequest를 사용하는 요청들에 대한 접근제한을 설정하겠다.
             .requestMatchers("/v1/authenticate").permitAll() // 로그인 api
             .requestMatchers("/v1/users").permitAll() // 회원가입 api
+            .requestMatchers(HttpMethod.GET, "/v1/boards/**").permitAll() // 게시글 api
             .anyRequest().authenticated() // 그 외 인증 없이 접근X
             .and()
             .apply(new JwtSecurityConfig(tokenProvider)); // JwtFilter를 addFilterBefore로 등록했던 JwtSecurityConfig class 적용
