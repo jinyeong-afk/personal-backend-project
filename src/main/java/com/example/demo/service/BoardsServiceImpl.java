@@ -7,6 +7,7 @@ import com.example.demo.repository.BoardsRepository;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
+import com.example.demo.responseObject.ResponseReadOneBoards;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,11 @@ public class BoardsServiceImpl implements BoardsService{
             .map(BoardsData::new)
             .collect(Collectors.toList());
         return boardsPage;
+    }
+
+    @Override
+    public Boards getOneBoards(long id) {
+        return boardsRepository.findById(id).get();
     }
 
 }
