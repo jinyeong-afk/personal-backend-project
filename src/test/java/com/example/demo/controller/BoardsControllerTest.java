@@ -149,4 +149,17 @@ class BoardsControllerTest {
 
         verify(boardsRepository).findById(findBoardId);
     }
+
+    @DisplayName("특정 게시글 조회 실패")
+    @Test
+    public void testGetOneBoardsNotFound() {
+        long findBoardId = 0L;
+
+        ResponseEntity<ResponseReadOneBoards> response = boardsController.readOneBoards(findBoardId);
+
+        assertEquals(response.getBody(), null);
+        assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
+
+        verify(boardsRepository).findById(findBoardId);
+    }
 }
