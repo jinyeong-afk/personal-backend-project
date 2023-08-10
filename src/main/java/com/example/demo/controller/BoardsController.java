@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,6 +83,18 @@ public class BoardsController {
         try {
             boardsService.updateBoards(id, requestUpdateBoards, authentication);
         } catch (ResponseStatusException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) return ResponseEntity.notFound().build();
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBoards(@PathVariable long id,
+        Authentication authentication) {
+        try {
+            boardsService.deleteBoards(id, authentication);
+        } catch(ResponseStatusException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) return ResponseEntity.notFound().build();
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
