@@ -17,6 +17,7 @@ import com.example.demo.model.Users;
 import com.example.demo.repository.BoardsRepository;
 import com.example.demo.repository.UsersRepository;
 import com.example.demo.requestObject.RequestCreateBoards;
+import com.example.demo.requestObject.RequestUpdateBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
 import com.example.demo.responseObject.ResponseReadOneBoards;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -161,5 +163,36 @@ class BoardsControllerTest {
         assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
 
         verify(boardsRepository).findById(findBoardId);
+    }
+
+    @DisplayName("특정 게시글 수정")
+    @Test
+    public void testUpdateBoards() {
+        // Given
+        long id = 0L;
+        RequestUpdateBoards requestUpdateBoards = new RequestUpdateBoards();
+        requestUpdateBoards.setTitle("새로운 타이틀");
+        requestUpdateBoards.setContent("새로운 내용");
+
+        Boards existingBoards = Boards.builder()
+            .id(id)
+            .users(Users.builder().email("test@test.com").build())
+            .title("기존 타이틀")
+            .content("기존 내용")
+            .build();
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.of(existingBoards));
+
+        // When
+        boardsService.updateBoards(id, requestUpdateBoards);
+
+        // Then
+        ArgumentCaptor<Boards> captor = ArgumentCaptor.forClass(Boards.class);
+        verify(boardsRepository).save(captor.capture());
+
+        Boards updatedBoards = captor.getValue();
+        assertEquals(id, updatedBoards.getId());
+        assertEquals(requestUpdateBoards.getTitle(), updatedBoards.getTitle());
+        assertEquals(requestUpdateBoards.getContent(), updatedBoards.getContent());
     }
 }
