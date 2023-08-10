@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/v1/boards")
@@ -76,13 +77,14 @@ public class BoardsController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<Void> updateBoards(@PathVariable long id,
-        @RequestBody RequestUpdateBoards requestUpdateBoards) {
+        @RequestBody RequestUpdateBoards requestUpdateBoards
+        , Authentication authentication) {
         try {
-            boardsService.updateBoards(id, requestUpdateBoards);
-            return ResponseEntity.ok().build();
-        } catch(Exception e) {
-            return ResponseEntity.notFound().build();
+            boardsService.updateBoards(id, requestUpdateBoards, authentication);
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) return ResponseEntity.notFound().build();
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
+        return ResponseEntity.ok().build();
     }
 }

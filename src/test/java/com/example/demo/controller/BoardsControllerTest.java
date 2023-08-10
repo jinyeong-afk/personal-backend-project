@@ -170,13 +170,14 @@ class BoardsControllerTest {
     public void testUpdateBoards() {
         // Given
         long id = 0L;
+        String userEmail = "test@test.com";
         RequestUpdateBoards requestUpdateBoards = new RequestUpdateBoards();
         requestUpdateBoards.setTitle("새로운 타이틀");
         requestUpdateBoards.setContent("새로운 내용");
 
         Boards existingBoards = Boards.builder()
             .id(id)
-            .users(Users.builder().email("test@test.com").build())
+            .users(Users.builder().email(userEmail).build())
             .title("기존 타이틀")
             .content("기존 내용")
             .build();
@@ -184,7 +185,8 @@ class BoardsControllerTest {
         when(boardsRepository.findById(id)).thenReturn(Optional.of(existingBoards));
 
         // When
-        boardsService.updateBoards(id, requestUpdateBoards);
+        when(authentication.getName()).thenReturn(userEmail);
+        boardsService.updateBoards(id, requestUpdateBoards, authentication);
 
         // Then
         ArgumentCaptor<Boards> captor = ArgumentCaptor.forClass(Boards.class);
