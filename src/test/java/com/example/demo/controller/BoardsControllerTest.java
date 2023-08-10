@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -51,6 +52,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class BoardsControllerTest {
@@ -196,5 +198,68 @@ class BoardsControllerTest {
         assertEquals(id, updatedBoards.getId());
         assertEquals(requestUpdateBoards.getTitle(), updatedBoards.getTitle());
         assertEquals(requestUpdateBoards.getContent(), updatedBoards.getContent());
+    }
+
+    @DisplayName("게시글 삭제 - 성공")
+    @Test
+    public void testDeleteBoardsSuccess() {
+        // Given
+        long id = 1L;
+        Authentication authentication = mock(Authentication.class);
+
+        Boards mockBoards = Boards.builder()
+            .id(id)
+            .users(Users.builder().email("test@test.com").build())
+            .build();
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.of(mockBoards));
+        when(authentication.getName()).thenReturn("test@test.com");
+
+        // When
+        boardsService.deleteBoards(id, authentication);
+
+        // Then
+        verify(boardsRepository).findById(id);
+        verify(authentication).getName();
+        verify(boardsRepository).deleteById(id);
+        verifyNoMoreInteractions(boardsRepository, authentication);
+    }
+
+    @DisplayName("게시글 삭제 - 게시글 없음")
+    @Test
+    public void testDeleteBoardsNotFound() {
+        // Given
+        long id = 1L;
+        Authentication authentication = mock(Authentication.class);
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(
+            ResponseStatusException.class, () -> boardsService.deleteBoards(id, authentication));
+        verify(boardsRepository).findById(id);
+        verifyNoMoreInteractions(boardsRepository, authentication);
+    }
+
+    @DisplayName("게시글 삭제 - 권한 없음")
+    @Test
+    public void testDeleteBoardsUnauthorized() {
+        // Given
+        long id = 1L;
+        Authentication authentication = mock(Authentication.class);
+
+        Boards mockBoards = Boards.builder()
+            .id(id)
+            .users(Users.builder().email("test@test.com").build())
+            .build();
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.of(mockBoards));
+        when(authentication.getName()).thenReturn("other@test.com");
+
+        // When & Then
+        assertThrows(ResponseStatusException.class, () -> boardsService.deleteBoards(id, authentication));
+        verify(boardsRepository).findById(id);
+        verify(authentication).getName();
+        verifyNoMoreInteractions(boardsRepository, authentication);
     }
 }

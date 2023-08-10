@@ -11,4 +11,5 @@ public interface BoardsService {
     public Page<Boards> getAllBoards(Integer pagination);
     public Boards getOneBoards(long id);
     public void updateBoards(long id, RequestUpdateBoards requestUpdateBoards, Authentication authentication);
+    public void deleteBoards(long id, Authentication authentication);
 }

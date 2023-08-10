@@ -56,7 +56,7 @@ public class BoardsServiceImpl implements BoardsService{
 
     @Override
     public void updateBoards(long id, RequestUpdateBoards requestUpdateBoards, Authentication authentication) {
-        Boards boards = checkUpdateBoardsException(id, authentication);
+        Boards boards = checkBoardsException(id, authentication);
         if (requestUpdateBoards.getTitle() == null) requestUpdateBoards.setTitle(boards.getTitle());
         if (requestUpdateBoards.getContent() == null) requestUpdateBoards.setContent(boards.getContent());
         boardsRepository.save(Boards.builder()
@@ -67,7 +67,13 @@ public class BoardsServiceImpl implements BoardsService{
             .build());
     }
 
-    public Boards checkUpdateBoardsException(long id, Authentication authentication) {
+    @Override
+    public void deleteBoards(long id, Authentication authentication) {
+        checkBoardsException(id, authentication);
+        boardsRepository.deleteById(id);
+    }
+
+    public Boards checkBoardsException(long id, Authentication authentication) {
         Optional<Boards> boards = boardsRepository.findById(id);
         if (!boards.isPresent()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
