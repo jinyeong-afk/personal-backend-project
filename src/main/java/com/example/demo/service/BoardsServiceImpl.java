@@ -5,6 +5,7 @@ import com.example.demo.model.Boards;
 import com.example.demo.model.Users;
 import com.example.demo.repository.BoardsRepository;
 import com.example.demo.repository.UsersRepository;
+import com.example.demo.requestObject.RequestUpdateBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
 import com.example.demo.responseObject.ResponseReadOneBoards;
@@ -49,6 +50,19 @@ public class BoardsServiceImpl implements BoardsService{
     @Override
     public Boards getOneBoards(long id) {
         return boardsRepository.findById(id).get();
+    }
+
+    @Override
+    public void updateBoards(long id, RequestUpdateBoards requestUpdateBoards) {
+        Boards boards = boardsRepository.findById(id).get();
+        if (requestUpdateBoards.getTitle() == null) requestUpdateBoards.setTitle(boards.getTitle());
+        if (requestUpdateBoards.getContent() == null) requestUpdateBoards.setContent(boards.getContent());
+        boardsRepository.save(Boards.builder()
+            .id(boards.getId())
+            .users(boards.getUsers())
+            .title(requestUpdateBoards.getTitle())
+            .content(requestUpdateBoards.getContent())
+            .build());
     }
 
 }
