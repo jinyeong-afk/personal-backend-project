@@ -5,6 +5,7 @@ import com.example.demo.model.Boards;
 import com.example.demo.requestObject.RequestCreateBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
+import com.example.demo.responseObject.ResponseReadOneBoards;
 import com.example.demo.service.BoardsService;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,5 +52,20 @@ public class BoardsController {
             .totalElements(boardsPage.getTotalElements())
             .totalPages(boardsPage.getTotalPages())
             .build());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseReadOneBoards> readOneBoards(@PathVariable long id) {
+        try{
+            Boards boards = boardsService.getOneBoards(id);
+            return ResponseEntity.ok(ResponseReadOneBoards.builder()
+                .id(boards.getId())
+                .userEmail(boards.getUsers().getEmail())
+                .title(boards.getTitle())
+                .content(boards.getContent())
+                .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }
