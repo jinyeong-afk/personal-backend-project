@@ -19,11 +19,13 @@ import com.example.demo.repository.UsersRepository;
 import com.example.demo.requestObject.RequestCreateBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
+import com.example.demo.responseObject.ResponseReadOneBoards;
 import com.example.demo.service.BoardsService;
 import com.example.demo.service.BoardsServiceImpl;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +38,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -119,5 +122,31 @@ class BoardsControllerTest {
 
         // Mock 객체의 메서드 호출 검증
         verify(boardsRepository).findAll(any(Pageable.class));
+    }
+
+    @DisplayName("특정 게시글 조회 성공")
+    @Test
+    public void testGetOneBoardsSuccess() {
+        long findBoardId = 0L;
+        Boards boards = Boards.builder()
+            .id(findBoardId)
+            .users(Users.builder().email("test@test.com").build())
+            .title("테스트 타이틀")
+            .content("테스트 컨텐츠")
+            .build();
+
+        when(boardsRepository.findById(findBoardId)).thenReturn(Optional.ofNullable(boards));
+
+        ResponseEntity<ResponseReadOneBoards> response = boardsController.readOneBoards(findBoardId);
+
+        assertEquals(response.getBody().toString(), ResponseReadOneBoards.builder()
+            .id(boards.getId())
+            .userEmail(boards.getUsers().getEmail())
+            .title(boards.getTitle())
+            .content(boards.getContent())
+            .build().toString());
+        assertEquals(response.getStatusCode(), HttpStatus.OK);
+
+        verify(boardsRepository).findById(findBoardId);
     }
 }
