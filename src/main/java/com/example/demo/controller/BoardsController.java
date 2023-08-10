@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.CreateBoardsDTO;
 import com.example.demo.model.Boards;
 import com.example.demo.requestObject.RequestCreateBoards;
+import com.example.demo.requestObject.RequestUpdateBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards;
 import com.example.demo.responseObject.ResponseReadAllBoards.BoardsData;
 import com.example.demo.responseObject.ResponseReadOneBoards;
@@ -15,12 +16,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/v1/boards")
@@ -41,8 +44,11 @@ public class BoardsController {
     }
 
     @GetMapping
-    public ResponseEntity<ResponseReadAllBoards> ReadAllBoards(@RequestParam(required = false) Integer pagination) {
-        if (pagination == null) pagination = 0;
+    public ResponseEntity<ResponseReadAllBoards> ReadAllBoards(
+        @RequestParam(required = false) Integer pagination) {
+        if (pagination == null) {
+            pagination = 0;
+        }
         Page<Boards> boardsPage = boardsService.getAllBoards(pagination);
         return ResponseEntity.ok(ResponseReadAllBoards.builder()
             .contents(boardsPage.stream()
@@ -56,7 +62,7 @@ public class BoardsController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseReadOneBoards> readOneBoards(@PathVariable long id) {
-        try{
+        try {
             Boards boards = boardsService.getOneBoards(id);
             return ResponseEntity.ok(ResponseReadOneBoards.builder()
                 .id(boards.getId())
@@ -67,5 +73,18 @@ public class BoardsController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Void> updateBoards(@PathVariable long id,
+        @RequestBody RequestUpdateBoards requestUpdateBoards
+        , Authentication authentication) {
+        try {
+            boardsService.updateBoards(id, requestUpdateBoards, authentication);
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) return ResponseEntity.notFound().build();
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok().build();
     }
 }
