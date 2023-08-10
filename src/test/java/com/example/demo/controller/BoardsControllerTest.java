@@ -52,6 +52,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
 class BoardsControllerTest {
@@ -221,6 +222,22 @@ class BoardsControllerTest {
         verify(boardsRepository).findById(id);
         verify(authentication).getName();
         verify(boardsRepository).deleteById(id);
+        verifyNoMoreInteractions(boardsRepository, authentication);
+    }
+
+    @DisplayName("게시글 삭제 - 게시글 없음")
+    @Test
+    public void testDeleteBoardsNotFound() {
+        // Given
+        long id = 1L;
+        Authentication authentication = mock(Authentication.class);
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThrows(
+            ResponseStatusException.class, () -> boardsService.deleteBoards(id, authentication));
+        verify(boardsRepository).findById(id);
         verifyNoMoreInteractions(boardsRepository, authentication);
     }
 }
