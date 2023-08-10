@@ -240,4 +240,26 @@ class BoardsControllerTest {
         verify(boardsRepository).findById(id);
         verifyNoMoreInteractions(boardsRepository, authentication);
     }
+
+    @DisplayName("게시글 삭제 - 권한 없음")
+    @Test
+    public void testDeleteBoardsUnauthorized() {
+        // Given
+        long id = 1L;
+        Authentication authentication = mock(Authentication.class);
+
+        Boards mockBoards = Boards.builder()
+            .id(id)
+            .users(Users.builder().email("test@test.com").build())
+            .build();
+
+        when(boardsRepository.findById(id)).thenReturn(Optional.of(mockBoards));
+        when(authentication.getName()).thenReturn("other@test.com");
+
+        // When & Then
+        assertThrows(ResponseStatusException.class, () -> boardsService.deleteBoards(id, authentication));
+        verify(boardsRepository).findById(id);
+        verify(authentication).getName();
+        verifyNoMoreInteractions(boardsRepository, authentication);
+    }
 }
