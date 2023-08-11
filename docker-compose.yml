@@ -1,11 +1,30 @@
 version: "3"
 services:
-  database:
-    image: mysql
-    restart: always
-    container_name: test
-    environment:
+  database: #service 이름
+    image: mysql    #불러올 image
+    container_name: test    #container 이름 지정
+    environment: # 환경 설정
       - MYSQL_DATABASE=test
+      - MYSQL_ROOT_HOST=%
       - MYSQL_ROOT_PASSWORD=1234
+    ports: #port 지정
+      - 3306:3306
+    networks:
+      - onBoarding
+  webapp:
+    image: xoeh7002/jinyeong:latest
+    restart: always        #컨테이너 재실행
+    depends_on: #database service가 실행된 이후에 실행
+      - database
     ports:
-      - "3306:3306"
+      - 8080:8080
+    container_name: app_test01
+    environment: #환경 설정(database연결 및 profile 지정)
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/test
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+    networks:
+      - onBoarding
+
+networks:
+  onBoarding:
