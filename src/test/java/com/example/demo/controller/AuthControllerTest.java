@@ -37,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,7 +83,7 @@ class AuthControllerTest {
         when(tokenProvider.createToken(any())).thenReturn(jwtToken);
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-        ResponseEntity<Void> responseEntity = authController.authorize(requestLoginUsers);
+        ResponseEntity<Void> responseEntity = authController.authorize(requestLoginUsers, new BeanPropertyBindingResult(requestLoginUsers, "requestLoginUsers"));
 
         assertEquals(authentication.getName(), username);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -105,9 +106,9 @@ class AuthControllerTest {
 
         String jwtToken = "mocked-jwt-token";
         when(tokenProvider.createToken(any())).thenReturn(jwtToken);
-        when(authController.authorize(failedUsers)).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+        when(authController.authorize(failedUsers, new BeanPropertyBindingResult(failedUsers, "requestLoginUsers"))).thenThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED));
 
-        ResponseEntity<Void> responseEntity = authController.authorize(failedUsers);
+        ResponseEntity<Void> responseEntity = authController.authorize(failedUsers, new BeanPropertyBindingResult(failedUsers, "requestLoginUsers"));
 
         assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
     }

@@ -37,6 +37,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.server.ResponseStatusException;
 
 @ExtendWith(MockitoExtension.class)
@@ -140,7 +141,7 @@ class UsersControllerTest {
         // when
         when(usersService.addUser(request)).thenThrow(new ResponseStatusException(HttpStatus.CONFLICT));
 
-        ResponseEntity<ResponseSignUpUsers> responseEntity = usersController.signUp(request);
+        ResponseEntity<ResponseSignUpUsers> responseEntity = usersController.signUp(request, new BeanPropertyBindingResult(request, "requestSignUpUsers"));
 
         // then
         assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());

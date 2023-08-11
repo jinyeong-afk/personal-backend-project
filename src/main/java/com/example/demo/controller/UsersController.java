@@ -6,6 +6,7 @@ import com.example.demo.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +21,10 @@ public class UsersController {
     private final UsersService usersService;
 
     @PostMapping
-    public ResponseEntity<ResponseSignUpUsers> signUp(@RequestBody @Validated RequestSignUpUsers requestSignUpUsers) {
+    public ResponseEntity<ResponseSignUpUsers> signUp(@RequestBody @Validated RequestSignUpUsers requestSignUpUsers, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(usersService.addUser(requestSignUpUsers));
         } catch (ResponseStatusException e) {

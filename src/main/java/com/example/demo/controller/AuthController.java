@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +28,8 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<Void> authorize(@RequestBody @Validated RequestLoginUsers requestLoginUsers) {
-
+    public ResponseEntity<Void> authorize(@RequestBody @Validated RequestLoginUsers requestLoginUsers, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         try{
             UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(requestLoginUsers.getEmail(), requestLoginUsers.getPassword());
