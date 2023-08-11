@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,7 +35,7 @@ public class BoardsController {
     private final BoardsService boardsService;
 
     @PostMapping
-    public ResponseEntity<Void> createBoard(@RequestBody RequestCreateBoards requestCreateBoards,
+    public ResponseEntity<Void> createBoard(@RequestBody @Validated RequestCreateBoards requestCreateBoards,
         Authentication authentication) {
         boardsService.addBoard(CreateBoardsDTO.builder()
             .email(authentication.getName())
